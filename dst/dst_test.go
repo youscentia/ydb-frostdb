@@ -30,12 +30,12 @@ import (
 	"go.uber.org/goleak"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/polarsignals/frostdb"
-	walpb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/wal/v1alpha1"
-	"github.com/polarsignals/frostdb/index"
-	"github.com/polarsignals/frostdb/query"
-	"github.com/polarsignals/frostdb/samples"
-	"github.com/polarsignals/frostdb/wal"
+	"github.com/youscentia/ydb-frostdb"
+	walpb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/wal/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/index"
+	"github.com/youscentia/ydb-frostdb/query"
+	"github.com/youscentia/ydb-frostdb/samples"
+	"github.com/youscentia/ydb-frostdb/wal"
 )
 
 const (

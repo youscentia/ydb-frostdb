@@ -9,8 +9,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/polarsignals/frostdb/query/logicalplan"
-	"github.com/polarsignals/frostdb/query/physicalplan"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/query/physicalplan"
 )
 
 type Builder interface {

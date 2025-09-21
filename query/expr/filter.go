@@ -9,8 +9,8 @@ import (
 
 	"github.com/parquet-go/parquet-go"
 
-	"github.com/polarsignals/frostdb/pqarrow"
-	"github.com/polarsignals/frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/pqarrow"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
 )
 
 type PreExprVisitorFunc func(expr logicalplan.Expr) bool

@@ -8,8 +8,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	"github.com/polarsignals/frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
 )
 
 type FakeTableReader struct {

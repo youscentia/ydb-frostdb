@@ -10,7 +10,8 @@ import (
 	"github.com/go-kit/log"
 	"github.com/stretchr/testify/require"
 
-	walpb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/wal/v1alpha1"
+	walpb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/wal/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/vfs/adapters"
 )
 
 func TestWAL(t *testing.T) {
@@ -18,6 +19,7 @@ func TestWAL(t *testing.T) {
 	w, err := Open(
 		log.NewNopLogger(),
 		dir,
+		adapters.NewOSAdapter(),
 	)
 	require.NoError(t, err)
 	w.RunAsync()
@@ -38,6 +40,7 @@ func TestWAL(t *testing.T) {
 	w, err = Open(
 		log.NewNopLogger(),
 		dir,
+		adapters.NewOSAdapter(),
 	)
 	require.NoError(t, err)
 	w.RunAsync()
@@ -68,6 +71,7 @@ func TestWAL(t *testing.T) {
 	w, err = Open(
 		log.NewNopLogger(),
 		dir,
+		adapters.NewOSAdapter(),
 	)
 	require.NoError(t, err)
 	w.RunAsync()
@@ -80,6 +84,7 @@ func TestCorruptWAL(t *testing.T) {
 	w, err := Open(
 		log.NewNopLogger(),
 		path,
+		adapters.NewOSAdapter(),
 	)
 	require.NoError(t, err)
 	w.RunAsync()
@@ -103,6 +108,7 @@ func TestCorruptWAL(t *testing.T) {
 	w, err = Open(
 		log.NewNopLogger(),
 		path,
+		adapters.NewOSAdapter(),
 	)
 	require.NoError(t, err)
 	w.RunAsync()
@@ -123,6 +129,7 @@ func TestUnexpectedTxn(t *testing.T) {
 		w, err := Open(
 			log.NewNopLogger(),
 			walDir,
+			adapters.NewOSAdapter(),
 		)
 		require.NoError(t, err)
 		w.RunAsync()
@@ -141,6 +148,7 @@ func TestUnexpectedTxn(t *testing.T) {
 	w, err := Open(
 		log.NewNopLogger(),
 		walDir,
+		adapters.NewOSAdapter(),
 	)
 	require.NoError(t, err)
 	w.RunAsync()
@@ -169,6 +177,7 @@ func TestWALTruncate(t *testing.T) {
 			w, err := Open(
 				log.NewNopLogger(),
 				dir,
+				adapters.NewOSAdapter(),
 			)
 			require.NoError(t, err)
 			defer w.Close()
@@ -212,6 +221,7 @@ func TestWALTruncate(t *testing.T) {
 		w, err := Open(
 			log.NewNopLogger(),
 			dir,
+			adapters.NewOSAdapter(),
 		)
 		require.NoError(t, err)
 		defer w.Close()
@@ -268,6 +278,7 @@ func TestWALCloseTimeout(t *testing.T) {
 	w, err := Open(
 		log.NewNopLogger(),
 		dir,
+		adapters.NewOSAdapter(),
 	)
 	require.NoError(t, err)
 

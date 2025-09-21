@@ -8,9 +8,9 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/storage/v1alpha1"
-	"github.com/polarsignals/frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	pb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/storage/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
 )
 
 func TestPlan(t *testing.T) {

@@ -20,12 +20,13 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/util"
 	"github.com/go-kit/log/level"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	snapshotpb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/snapshot/v1alpha1"
-	tablepb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/table/v1alpha1"
-	walpb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/wal/v1alpha1"
-	"github.com/polarsignals/frostdb/index"
-	"github.com/polarsignals/frostdb/parts"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	snapshotpb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/snapshot/v1alpha1"
+	tablepb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/table/v1alpha1"
+	walpb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/wal/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/index"
+	"github.com/youscentia/ydb-frostdb/parts"
+	"github.com/youscentia/ydb-frostdb/vfs"
 )
 
 // This file implements writing and reading database snapshots from disk.
@@ -49,21 +50,13 @@ import (
 // Refer to minVersionSupported/maxVersionSupported for more details.
 
 const (
-	snapshotMagic = "FDBS"
-	dirPerms      = os.FileMode(0o755)
-	filePerms     = os.FileMode(0o640)
-	// When bumping the version number, please add a comment indicating the
-	// reason for the bump. Note that the version should only be bumped if the
-	// new version introduces backwards-incompatible changes. Note that protobuf
-	// changes are backwards-compatible, this version number is only necessary
-	// for the non-proto format (e.g. if compression is introduced).
-	// Version 1: Initial snapshot version with checksum and version number.
-	snapshotVersion = 1
-	// minReadVersion is bumped when deprecating older versions. For example,
-	// a reader of the new version can choose to still support reading older
-	// versions, but will bump this constant to the minimum version it claims
-	// to support.
-	minReadVersion = snapshotVersion
+	snapshotMagic       = "FDBS"
+	dirPerms            = os.FileMode(0o755)
+	filePerms           = os.FileMode(0o640)
+	snapshotVersion     = 1
+	minReadVersion      = snapshotVersion
+	snapshotFileExt     = ".fdbs"
+	snapshotIndexSubDir = "index"
 )
 
 // segmentName returns a 20-byte textual representation of a snapshot file name
@@ -112,7 +105,7 @@ func (db *DB) snapshot(ctx context.Context, async bool, onSuccess func()) {
 		"msg", "starting a new snapshot",
 		"tx", tx,
 	)
-	doSnapshot := func(writeSnapshot func(context.Context, io.Writer) error) {
+	doSnapshot := func(writeSnapshot func(context.Context, vfs.File) error) {
 		db.Wait(tx - 1) // Wait for all transactions to complete before taking a snapshot.
 		start := time.Now()
 		defer db.snapshotInProgress.Store(false)
@@ -159,41 +152,49 @@ func (db *DB) snapshot(ctx context.Context, async bool, onSuccess func()) {
 }
 
 // snapshotAtTX takes a snapshot of the state of the database at transaction tx.
-func (db *DB) snapshotAtTX(ctx context.Context, tx uint64, writeSnapshot func(context.Context, io.Writer) error) error {
+func (db *DB) snapshotAtTX(ctx context.Context, tx uint64, writeSnapshot func(context.Context, vfs.File) error) error {
 	var fileSize int64
 	start := time.Now()
 	if err := func() error {
 		snapshotsDir := SnapshotDir(db, tx)
 		fileName := filepath.Join(snapshotsDir, snapshotFileName(tx))
-		_, err := os.Stat(fileName)
-		if err == nil { // Snapshot file already exists
+		file, err := db.fs.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePerms)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		info, err := file.Stat()
+		if err != nil {
+			return err
+		}
+
+		if info.Size() > 0 { // Snapshot file already exists
 			if db.validateSnapshotTxn(ctx, tx) == nil {
 				return nil // valid snapshot already exists at tx no need to re-snapshot
 			}
 
 			// Snapshot exists but is invalid. Remove it.
-			if err := os.RemoveAll(SnapshotDir(db, tx)); err != nil {
+			if err := db.fs.RemoveAll(SnapshotDir(db, tx)); err != nil {
 				return fmt.Errorf("failed to remove invalid snapshot %v: %w", tx, err)
 			}
 		}
-		if err := os.MkdirAll(snapshotsDir, dirPerms); err != nil {
+		if err := db.fs.MkdirAll(snapshotsDir, dirPerms); err != nil {
 			return err
 		}
 
-		f, err := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR|os.O_TRUNC, filePerms)
-		if err != nil {
+		if err := file.Truncate(0); err != nil {
 			return err
 		}
-		defer f.Close()
 
 		if err := func() error {
-			if err := writeSnapshot(ctx, f); err != nil {
+			if err := writeSnapshot(ctx, file); err != nil {
 				return err
 			}
-			if err := f.Sync(); err != nil {
+			if err := file.Sync(); err != nil {
 				return err
 			}
-			info, err := f.Stat()
+			info, err := file.Stat()
 			if err != nil {
 				return err
 			}
@@ -201,7 +202,7 @@ func (db *DB) snapshotAtTX(ctx context.Context, tx uint64, writeSnapshot func(co
 			return nil
 		}(); err != nil {
 			err = fmt.Errorf("failed to write snapshot for tx %d: %w", tx, err)
-			if removeErr := os.RemoveAll(snapshotsDir); removeErr != nil {
+			if removeErr := db.fs.RemoveAll(snapshotsDir); removeErr != nil {
 				err = fmt.Errorf("%w: failed to remove snapshot directory: %v", err, removeErr)
 			}
 			return err
@@ -235,7 +236,7 @@ func (db *DB) loadLatestSnapshotFromDir(ctx context.Context, dir string) (uint64
 	// No error should be returned from snapshotsDo.
 	_ = db.snapshotsDo(ctx, dir, func(parsedTx uint64, entry os.DirEntry) (bool, error) {
 		if err := func() error {
-			f, err := os.Open(filepath.Join(dir, entry.Name(), snapshotFileName(parsedTx)))
+			f, err := db.fs.OpenFile(filepath.Join(dir, entry.Name(), snapshotFileName(parsedTx)), os.O_RDONLY, 0)
 			if err != nil {
 				return err
 			}
@@ -296,7 +297,7 @@ func (db *DB) validateSnapshotTxn(ctx context.Context, tx uint64) error {
 		}
 
 		return false, func() error {
-			f, err := os.Open(filepath.Join(dir, entry.Name(), snapshotFileName(parsedTx)))
+			f, err := db.fs.OpenFile(filepath.Join(dir, entry.Name(), snapshotFileName(parsedTx)), os.O_RDONLY, 0)
 			if err != nil {
 				return err
 			}
@@ -320,7 +321,7 @@ func (db *DB) getLatestValidSnapshotTxn(ctx context.Context) (uint64, error) {
 	// No error should be returned from snapshotsDo.
 	_ = db.snapshotsDo(ctx, dir, func(parsedTx uint64, entry os.DirEntry) (bool, error) {
 		if err := func() error {
-			f, err := os.Open(filepath.Join(dir, entry.Name(), snapshotFileName(parsedTx)))
+			f, err := db.fs.OpenFile(filepath.Join(dir, entry.Name(), snapshotFileName(parsedTx)), os.O_RDONLY, 0)
 			if err != nil {
 				return err
 			}
@@ -379,15 +380,15 @@ func (w *offsetWriter) checksum() uint32 {
 	return w.runningChecksum.Sum32()
 }
 
-func (db *DB) snapshotWriter(tx uint64) func(context.Context, io.Writer) error {
-	return func(ctx context.Context, w io.Writer) error {
+func (db *DB) snapshotWriter(tx uint64) func(context.Context, vfs.File) error {
+	return func(ctx context.Context, w vfs.File) error {
 		return WriteSnapshot(ctx, tx, db, w)
 	}
 }
 
 // offlineSnapshotWriter is used when a database is closing after all the tables have closed.
-func (db *DB) offlineSnapshotWriter(tx uint64) func(context.Context, io.Writer) error {
-	return func(ctx context.Context, w io.Writer) error {
+func (db *DB) offlineSnapshotWriter(tx uint64) func(context.Context, vfs.File) error {
+	return func(ctx context.Context, w vfs.File) error {
 		return WriteSnapshot(ctx, tx, db, w)
 	}
 }
@@ -678,7 +679,7 @@ func (db *DB) cleanupSnapshotDir(ctx context.Context, tx uint64) error {
 			// Continue.
 			return true, nil
 		}
-		if err := os.RemoveAll(filepath.Join(dir, entry.Name())); err != nil {
+		if err := db.fs.RemoveAll(filepath.Join(dir, entry.Name())); err != nil {
 			return false, err
 		}
 		return true, nil
@@ -690,7 +691,7 @@ func (db *DB) cleanupSnapshotDir(ctx context.Context, tx uint64) error {
 // false or an error is returned by the callback, the iteration is aborted and
 // the error returned.
 func (db *DB) snapshotsDo(ctx context.Context, dir string, callback func(tx uint64, entry os.DirEntry) (bool, error)) error {
-	files, err := os.ReadDir(dir)
+	files, err := db.fs.ReadDir(dir)
 	if err != nil {
 		return err
 	}
@@ -699,7 +700,7 @@ func (db *DB) snapshotsDo(ctx context.Context, dir string, callback func(tx uint
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		if filepath.Ext(entry.Name()) == ".fdbs" { // Legacy snapshots were stored at the top-level. Ignore these
+		if filepath.Ext(entry.Name()) == snapshotFileExt { // Legacy snapshots were stored at the top-level. Ignore these
 			continue
 		}
 		name := entry.Name()
@@ -720,7 +721,7 @@ func (db *DB) snapshotsDo(ctx context.Context, dir string, callback func(tx uint
 }
 
 func StoreSnapshot(ctx context.Context, tx uint64, db *DB, snapshot io.Reader) error {
-	return db.snapshotAtTX(ctx, tx, func(_ context.Context, w io.Writer) error {
+	return db.snapshotAtTX(ctx, tx, func(_ context.Context, w vfs.File) error {
 		_, err := io.Copy(w, snapshot)
 		return err
 	})
@@ -729,11 +730,11 @@ func StoreSnapshot(ctx context.Context, tx uint64, db *DB, snapshot io.Reader) e
 // Will restore the index files found in the given directory back to the table's index directory.
 func restoreIndexFilesFromSnapshot(db *DB, table, snapshotDir, blockID string) error {
 	// Remove the current index directory.
-	if err := os.RemoveAll(filepath.Join(db.indexDir(), table)); err != nil {
+	if err := db.fs.RemoveAll(filepath.Join(db.indexDir(), table)); err != nil {
 		return fmt.Errorf("failed to remove index directory: %w", err)
 	}
 
-	snapshotIndexDir := filepath.Join(snapshotDir, "index", table, blockID)
+	snapshotIndexDir := filepath.Join(snapshotDir, snapshotIndexSubDir, table, blockID)
 
 	// Restore the index files from the snapshot files.
 	return filepath.WalkDir(snapshotIndexDir, func(path string, d os.DirEntry, err error) error {
@@ -756,7 +757,7 @@ func restoreIndexFilesFromSnapshot(db *DB, table, snapshotDir, blockID string) e
 		filename := filepath.Base(path)
 		lvl := filepath.Base(filepath.Dir(path))
 
-		if err := os.MkdirAll(filepath.Join(db.indexDir(), table, blockID, lvl), dirPerms); err != nil {
+		if err := db.fs.MkdirAll(filepath.Join(db.indexDir(), table, blockID, lvl), dirPerms); err != nil {
 			return err
 		}
 
@@ -774,5 +775,5 @@ func SnapshotDir(db *DB, tx uint64) string {
 }
 
 func snapshotIndexDir(db *DB, tx uint64, table, block string) string {
-	return filepath.Join(SnapshotDir(db, tx), "index", table, block)
+	return filepath.Join(SnapshotDir(db, tx), snapshotIndexSubDir, table, block)
 }

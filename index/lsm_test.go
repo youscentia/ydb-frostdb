@@ -15,8 +15,8 @@ import (
 	"github.com/parquet-go/parquet-go"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	"github.com/polarsignals/frostdb/parts"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	"github.com/youscentia/ydb-frostdb/parts"
 )
 
 func compactParts(w io.Writer, compact []parts.Part, _ ...parquet.WriterOption) (int64, error) {

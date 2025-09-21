@@ -27,14 +27,14 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	walpb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/wal/v1alpha1"
-	"github.com/polarsignals/frostdb/index"
-	"github.com/polarsignals/frostdb/query"
-	"github.com/polarsignals/frostdb/query/logicalplan"
-	"github.com/polarsignals/frostdb/query/physicalplan"
-	"github.com/polarsignals/frostdb/recovery"
-	"github.com/polarsignals/frostdb/storage"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	walpb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/wal/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/index"
+	"github.com/youscentia/ydb-frostdb/query"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/query/physicalplan"
+	"github.com/youscentia/ydb-frostdb/recovery"
+	"github.com/youscentia/ydb-frostdb/storage"
 )
 
 func TestDBWithWALAndBucket(t *testing.T) {
@@ -1288,7 +1288,7 @@ func TestDBRecover(t *testing.T) {
 
 	// Ensure that the WAL is written to after loading from a snapshot. This
 	// tests a regression detailed in:
-	// https://github.com/polarsignals/frostdb/issues/390
+	// https://github.com/youscentia/ydb-frostdb/issues/390
 	t.Run("Issue390", func(t *testing.T) {
 		dir := setup(t, false)
 		c, err := New(

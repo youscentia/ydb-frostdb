@@ -9,7 +9,7 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/scalar"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
 )
 
 func BenchmarkBinaryScalarOperation(b *testing.B) {

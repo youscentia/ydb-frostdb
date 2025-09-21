@@ -17,10 +17,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	"github.com/polarsignals/frostdb/query/expr"
-	"github.com/polarsignals/frostdb/query/logicalplan"
-	"github.com/polarsignals/frostdb/storage"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	"github.com/youscentia/ydb-frostdb/query/expr"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/storage"
 )
 
 // DefaultBlockReaderLimit is the concurrency limit for reading blocks.

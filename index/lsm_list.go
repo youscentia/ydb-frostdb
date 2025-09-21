@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"sync/atomic"
 
-	"github.com/polarsignals/frostdb/parts"
+	"github.com/youscentia/ydb-frostdb/parts"
 )
 
 type SentinelType int

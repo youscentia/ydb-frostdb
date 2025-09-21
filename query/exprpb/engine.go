@@ -9,9 +9,9 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 
-	pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/storage/v1alpha1"
-	"github.com/polarsignals/frostdb/query/logicalplan"
-	"github.com/polarsignals/frostdb/query/physicalplan"
+	pb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/storage/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/query/physicalplan"
 )
 
 type ProtoEngine struct {

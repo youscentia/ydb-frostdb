@@ -7,7 +7,7 @@ import (
 	"github.com/parquet-go/parquet-go"
 	"github.com/parquet-go/parquet-go/format"
 
-	"github.com/polarsignals/frostdb/pqarrow/writer"
+	"github.com/youscentia/ydb-frostdb/pqarrow/writer"
 )
 
 func ParquetFieldToArrowField(pf parquet.Field) (arrow.Field, error) {

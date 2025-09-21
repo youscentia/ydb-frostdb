@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/dynparquet"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
 )
 
 func TestOnlyOneFieldCanBeSet(t *testing.T) {

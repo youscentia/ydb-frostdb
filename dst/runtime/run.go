@@ -9,7 +9,7 @@ import (
 	"github.com/tetratelabs/wazero/experimental/sysfs"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 
-	"github.com/polarsignals/frostdb/dst/vfs"
+	"github.com/youscentia/ydb-frostdb/dst/vfs"
 )
 
 const (

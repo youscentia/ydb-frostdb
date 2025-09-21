@@ -23,12 +23,12 @@ import (
 	"github.com/parquet-go/parquet-go"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	schemapb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha1"
-	"github.com/polarsignals/frostdb/index"
-	"github.com/polarsignals/frostdb/pqarrow"
-	"github.com/polarsignals/frostdb/query"
-	"github.com/polarsignals/frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	schemapb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/index"
+	"github.com/youscentia/ydb-frostdb/pqarrow"
+	"github.com/youscentia/ydb-frostdb/query"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
 )
 
 type TestLogHelper interface {

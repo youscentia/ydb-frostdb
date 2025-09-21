@@ -3,7 +3,7 @@ package dynparquet
 import (
 	"github.com/parquet-go/parquet-go"
 
-	"github.com/polarsignals/frostdb/samples"
+	"github.com/youscentia/ydb-frostdb/samples"
 )
 
 type (

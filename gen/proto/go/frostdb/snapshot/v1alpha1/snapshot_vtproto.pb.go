@@ -7,7 +7,7 @@ package snapshotv1alpha1
 import (
 	fmt "fmt"
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
-	v1alpha1 "github.com/polarsignals/frostdb/gen/proto/go/frostdb/table/v1alpha1"
+	v1alpha1 "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/table/v1alpha1"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	io "io"
 )

@@ -9,8 +9,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/apache/arrow-go/v18/arrow/scalar"
 
-	storagepb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/storage/v1alpha1"
-	"github.com/polarsignals/frostdb/query/logicalplan"
+	storagepb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/storage/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
 )
 
 // ExprsFromProtos converts a slice of proto representations of expressions to

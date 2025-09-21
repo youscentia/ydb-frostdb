@@ -8,12 +8,12 @@ import (
 	"github.com/cockroachdb/datadriven"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb"
-	"github.com/polarsignals/frostdb/dynparquet"
-	"github.com/polarsignals/frostdb/query"
-	"github.com/polarsignals/frostdb/query/physicalplan"
+	"github.com/youscentia/ydb-frostdb"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	"github.com/youscentia/ydb-frostdb/query"
+	"github.com/youscentia/ydb-frostdb/query/physicalplan"
 
-	schemapb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha1"
+	schemapb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha1"
 )
 
 const testdataDirectory = "testdata"

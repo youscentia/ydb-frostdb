@@ -8,8 +8,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/internal/records"
-	"github.com/polarsignals/frostdb/pqarrow/arrowutils"
+	"github.com/youscentia/ydb-frostdb/internal/records"
+	"github.com/youscentia/ydb-frostdb/pqarrow/arrowutils"
 )
 
 func BenchmarkSortRecord(b *testing.B) {

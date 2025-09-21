@@ -7,8 +7,8 @@ package tablev1alpha1
 import (
 	fmt "fmt"
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
-	v1alpha1 "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha1"
-	v1alpha2 "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
+	v1alpha1 "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha1"
+	v1alpha2 "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	io "io"
 )

@@ -18,8 +18,8 @@ import (
 	"github.com/parquet-go/parquet-go/format"
 	"google.golang.org/protobuf/proto"
 
-	schemapb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha1"
-	schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
+	schemapb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha1"
+	schemav2pb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha2"
 )
 
 const (

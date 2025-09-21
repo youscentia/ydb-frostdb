@@ -14,8 +14,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/ipc"
 	"github.com/spf13/cobra"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	snapshotpb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/snapshot/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	snapshotpb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/snapshot/v1alpha1"
 )
 
 var (

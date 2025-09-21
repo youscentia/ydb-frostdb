@@ -1,6 +1,6 @@
 package frostdb
 
-import "github.com/polarsignals/frostdb/wal"
+import "github.com/youscentia/ydb-frostdb/wal"
 
 type TestingOption Option
 

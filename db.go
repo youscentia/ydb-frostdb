@@ -27,15 +27,17 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	schemapb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha1"
-	schemav2pb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha2"
-	tablepb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/table/v1alpha1"
-	walpb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/wal/v1alpha1"
-	"github.com/polarsignals/frostdb/index"
-	"github.com/polarsignals/frostdb/parts"
-	"github.com/polarsignals/frostdb/query/logicalplan"
-	"github.com/polarsignals/frostdb/wal"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	schemapb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha1"
+	schemav2pb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha2"
+	tablepb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/table/v1alpha1"
+	walpb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/wal/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/index"
+	"github.com/youscentia/ydb-frostdb/parts"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/vfs"
+	vfsadapters "github.com/youscentia/ydb-frostdb/vfs/adapters"
+	"github.com/youscentia/ydb-frostdb/wal"
 )
 
 const (
@@ -53,6 +55,7 @@ type ColumnStore struct {
 	reg                 prometheus.Registerer
 	logger              log.Logger
 	tracer              trace.Tracer
+	fs                  vfs.FileSystem
 	activeMemorySize    int64
 	storagePath         string
 	enableWAL           bool
@@ -92,6 +95,7 @@ func New(
 		reg:                 prometheus.NewRegistry(),
 		logger:              log.NewNopLogger(),
 		tracer:              noop.NewTracerProvider().Tracer(""),
+		fs:                  vfsadapters.NewOSAdapter(),
 		indexConfig:         DefaultIndexConfig(),
 		indexDegree:         2,
 		splitSize:           2,
@@ -227,6 +231,13 @@ func WithCompactionAfterRecovery(tableNames []string) Option {
 	}
 }
 
+func WithFS(fs vfs.FileSystem) Option {
+	return func(s *ColumnStore) error {
+		s.fs = fs
+		return nil
+	}
+}
+
 // WithSnapshotTriggerSize specifies a size in bytes of uncompressed inserts
 // that will trigger a snapshot of the whole database. This can be larger than
 // the active memory size given that the active memory size tracks the size of
@@ -296,7 +307,7 @@ func (s *ColumnStore) recoverDBsFromStorage(ctx context.Context) error {
 	}
 
 	dir := s.DatabasesDir()
-	if _, err := os.Stat(dir); err != nil {
+	if _, err := s.fs.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			level.Debug(s.logger).Log("msg", "WAL directory does not exist, no WAL to replay")
 			return nil
@@ -304,7 +315,7 @@ func (s *ColumnStore) recoverDBsFromStorage(ctx context.Context) error {
 		return err
 	}
 
-	files, err := os.ReadDir(dir)
+	files, err := s.fs.ReadDir(dir)
 	if err != nil {
 		return err
 	}
@@ -344,6 +355,7 @@ type DB struct {
 
 	storagePath string
 	wal         WAL
+	fs          vfs.FileSystem
 
 	// The database supports multiple data sources and sinks.
 	sources []DataSource
@@ -460,6 +472,7 @@ func (s *ColumnStore) DB(ctx context.Context, name string, opts ...DBOption) (*D
 		logger:          logger,
 		tracer:          s.tracer,
 		wal:             &wal.NopWAL{},
+		fs:              s.fs,
 		sources:         s.sources,
 		sinks:           s.sinks,
 		metrics:         s.metrics.snapshotMetricsForDB(name),
@@ -476,10 +489,10 @@ func (s *ColumnStore) DB(ctx context.Context, name string, opts ...DBOption) (*D
 
 	if dbSetupErr := func() error {
 		if db.storagePath != "" {
-			if err := os.RemoveAll(db.trashDir()); err != nil {
+			if err := s.fs.RemoveAll(db.trashDir()); err != nil {
 				return err
 			}
-			if err := os.RemoveAll(db.indexDir()); err != nil { // Remove the index directory. These are either restored from snapshots or rebuilt from the WAL.
+			if err := s.fs.RemoveAll(db.indexDir()); err != nil { // Remove the index directory. These are either restored from snapshots or rebuilt from the WAL.
 				return err
 			}
 		}
@@ -616,13 +629,14 @@ func (s *ColumnStore) DropDB(name string) error {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 	delete(s.dbs, name)
-	return os.RemoveAll(filepath.Join(s.DatabasesDir(), name))
+	return s.fs.RemoveAll(filepath.Join(s.DatabasesDir(), name))
 }
 
 func (db *DB) openWAL(ctx context.Context, opts ...wal.Option) (WAL, error) {
 	wal, err := wal.Open(
 		db.logger,
 		db.walDir(),
+		db.fs,
 		opts...,
 	)
 	if err != nil {
@@ -1299,7 +1313,7 @@ func validateName(name string) bool {
 func (db *DB) dropStorage() error {
 	trashDir := db.trashDir()
 
-	entries, err := os.ReadDir(db.storagePath)
+	entries, err := db.fs.ReadDir(db.storagePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Nothing to drop.
@@ -1311,7 +1325,7 @@ func (db *DB) dropStorage() error {
 	// the storagePath for future opens of this database. Callers that want to
 	// drop the DB remove storagePath themselves.
 	if moveErr := func() error {
-		if err := os.MkdirAll(trashDir, os.FileMode(0o755)); err != nil {
+		if err := db.fs.MkdirAll(trashDir, os.FileMode(0o755)); err != nil {
 			return fmt.Errorf("making trash dir: %w", err)
 		}
 		// Create a temporary directory in the trash dir to avoid clashing
@@ -1323,7 +1337,7 @@ func (db *DB) dropStorage() error {
 		}
 		errs := make([]error, 0, len(entries))
 		for _, e := range entries {
-			if err := os.Rename(filepath.Join(db.storagePath, e.Name()), filepath.Join(tmpPath, e.Name())); err != nil && !os.IsNotExist(err) {
+			if err := db.fs.Rename(filepath.Join(db.storagePath, e.Name()), filepath.Join(tmpPath, e.Name())); err != nil && !os.IsNotExist(err) {
 				errs = append(errs, err)
 			}
 		}
@@ -1333,11 +1347,11 @@ func (db *DB) dropStorage() error {
 		// to attempting to remove them with RemoveAll.
 		errs := make([]error, 0, len(entries))
 		for _, e := range entries {
-			if err := os.RemoveAll(filepath.Join(db.storagePath, e.Name())); err != nil {
+			if err := db.fs.RemoveAll(filepath.Join(db.storagePath, e.Name())); err != nil {
 				errs = append(errs, err)
 			}
 		}
 		return errors.Join(errs...)
 	}
-	return os.RemoveAll(trashDir)
+	return db.fs.RemoveAll(trashDir)
 }

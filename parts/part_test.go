@@ -6,10 +6,10 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/dynparquet"
-	schemapb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/schema/v1alpha1"
-	"github.com/polarsignals/frostdb/internal/records"
-	"github.com/polarsignals/frostdb/pqarrow"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	schemapb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/schema/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/internal/records"
+	"github.com/youscentia/ydb-frostdb/pqarrow"
 )
 
 func TestFindMaximumNonOverlappingSet(t *testing.T) {

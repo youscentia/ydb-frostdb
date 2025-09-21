@@ -7,7 +7,7 @@
 package snapshotv1alpha1
 
 import (
-	v1alpha1 "github.com/polarsignals/frostdb/gen/proto/go/frostdb/table/v1alpha1"
+	v1alpha1 "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/table/v1alpha1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

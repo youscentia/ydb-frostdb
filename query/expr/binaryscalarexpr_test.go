@@ -6,7 +6,7 @@ import (
 	"github.com/parquet-go/parquet-go"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
 )
 
 type FakeColumnChunk struct {

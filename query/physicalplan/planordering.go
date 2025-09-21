@@ -1,8 +1,8 @@
 package physicalplan
 
 import (
-	"github.com/polarsignals/frostdb/dynparquet"
-	"github.com/polarsignals/frostdb/query/logicalplan"
+	"github.com/youscentia/ydb-frostdb/dynparquet"
+	"github.com/youscentia/ydb-frostdb/query/logicalplan"
 )
 
 type planOrderingInfoState int

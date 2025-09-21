@@ -19,7 +19,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
-	walpb "github.com/polarsignals/frostdb/gen/proto/go/frostdb/wal/v1alpha1"
+	walpb "github.com/youscentia/ydb-frostdb/gen/proto/go/frostdb/wal/v1alpha1"
+	"github.com/youscentia/ydb-frostdb/vfs"
 )
 
 type ReplayHandlerFunc func(tx uint64, record *walpb.Record) error
@@ -108,6 +109,7 @@ type FileWAL struct {
 
 	metrics      *Metrics
 	storeMetrics *wal.Metrics
+	fs           vfs.FileSystem
 
 	logRequestCh   chan *logRequest
 	logRequestPool *sync.Pool
@@ -229,9 +231,10 @@ func WithTestingCallbackWithDroppedLogsOnClose(cb func([]types.LogEntry)) Option
 func Open(
 	logger log.Logger,
 	path string,
+	fs vfs.FileSystem,
 	opts ...Option,
 ) (*FileWAL, error) {
-	if err := os.MkdirAll(path, dirPerms); err != nil {
+	if err := fs.MkdirAll(path, dirPerms); err != nil {
 		return nil, err
 	}
 
@@ -239,6 +242,7 @@ func Open(
 	w := &FileWAL{
 		logger:       logger,
 		path:         path,
+		fs:           fs,
 		logRequestCh: make(chan *logRequest),
 		logRequestPool: &sync.Pool{
 			New: func() any {

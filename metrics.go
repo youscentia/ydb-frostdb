@@ -5,9 +5,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
-	filewal "github.com/polarsignals/frostdb/wal"
+	filewal "github.com/youscentia/ydb-frostdb/wal"
 
-	"github.com/polarsignals/frostdb/index"
+	"github.com/youscentia/ydb-frostdb/index"
 )
 
 var (

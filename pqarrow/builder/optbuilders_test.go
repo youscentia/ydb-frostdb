@@ -11,7 +11,7 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/stretchr/testify/require"
 
-	"github.com/polarsignals/frostdb/pqarrow/builder"
+	"github.com/youscentia/ydb-frostdb/pqarrow/builder"
 )
 
 func TestOptBuilders(t *testing.T) {
@@ -60,7 +60,7 @@ func TestOptBuilders(t *testing.T) {
 	}
 }
 
-// https://github.com/polarsignals/frostdb/issues/270
+// https://github.com/youscentia/ydb-frostdb/issues/270
 func TestIssue270(t *testing.T) {
 	b := builder.NewOptBinaryBuilder(arrow.BinaryTypes.Binary)
 	b.AppendNull()

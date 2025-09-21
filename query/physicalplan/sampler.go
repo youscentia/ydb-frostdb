@@ -12,7 +12,7 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/apache/arrow-go/v18/arrow/util"
 
-	"github.com/polarsignals/frostdb/pqarrow/builder"
+	"github.com/youscentia/ydb-frostdb/pqarrow/builder"
 )
 
 type ReservoirSampler struct {
