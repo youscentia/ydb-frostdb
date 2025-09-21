@@ -86,6 +86,9 @@ type ColumnStore struct {
 
 type Option func(*ColumnStore) error
 
+type FileSystem = vfs.FileSystem
+type File = vfs.File
+
 func New(
 	options ...Option,
 ) (*ColumnStore, error) {
