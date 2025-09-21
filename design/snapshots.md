@@ -23,7 +23,7 @@ This document proposes to complement the WAL with point-in-time snapshots. Snaps
 
 ### Format
 
-Refer to [the snapshot .proto file](https://github.com/polarsignals/frostdb/blob/main/proto/frostdb/snapshot/v1alpha1/snapshot.proto) for information on snapshot metadata. Note that only metadata is stored in protobufs. This metadata is stored in the footer of a snapshot file and includes offsets to look up actual table data in the rest of the file. Refer to the [snapshot.go file](https://github.com/polarsignals/frostdb/blob/974038eeb6072e915f8e28eea5a18609f4f7ac74/snapshot.go#L28) for an in-depth explanation of the format of the full snapshot file.
+Refer to [the snapshot .proto file](https://github.com/youscentia/ydb-frostdb/blob/main/proto/frostdb/snapshot/v1alpha1/snapshot.proto) for information on snapshot metadata. Note that only metadata is stored in protobufs. This metadata is stored in the footer of a snapshot file and includes offsets to look up actual table data in the rest of the file. Refer to the [snapshot.go file](https://github.com/youscentia/ydb-frostdb/blob/974038eeb6072e915f8e28eea5a18609f4f7ac74/snapshot.go#L28) for an in-depth explanation of the format of the full snapshot file.
 
 ### Interval
 

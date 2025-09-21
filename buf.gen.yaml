@@ -2,7 +2,7 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: github.com/polarsignals/frostdb/gen/proto/go
+    default: github.com/youscentia/ydb-frostdb/gen/proto/go
 
 plugins:
   # renovate: datasource=github-releases depName=protocolbuffers/protobuf-go

@@ -5,9 +5,9 @@
 
 ---
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/polarsignals/frostdb.svg)](https://pkg.go.dev/github.com/polarsignals/frostdb)
-[![Go Report Card](https://goreportcard.com/badge/github.com/polarsignals/frostdb)](https://goreportcard.com/report/github.com/polarsignals/frostdb)
-[![Build](https://github.com/polarsignals/frostdb/actions/workflows/go.yml/badge.svg)](https://github.com/polarsignals/frostdb/actions/workflows/go.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/youscentia/ydb-frostdb.svg)](https://pkg.go.dev/github.com/youscentia/ydb-frostdb)
+[![Go Report Card](https://goreportcard.com/badge/github.com/youscentia/ydb-frostdb)](https://goreportcard.com/report/github.com/youscentia/ydb-frostdb)
+[![Build](https://github.com/youscentia/ydb-frostdb/actions/workflows/go.yml/badge.svg)](https://github.com/youscentia/ydb-frostdb/actions/workflows/go.yml)
 [![Discord](https://img.shields.io/discord/813669360513056790?label=Discord)](https://discord.com/invite/ZgUpYgpzXy)
 
 > This project is still in its infancy, consider it not production-ready, probably has various consistency and correctness problems and all API will change!
@@ -39,9 +39,9 @@ FrostDB is likely not suitable for your needs if:
 
 ## Getting Started
 
-You can explore the [examples](https://github.com/polarsignals/frostdb/tree/main/examples) directory for sample code using FrostDB. Below is a snippet from the simple database example. It creates a database with a dynamic column schema, inserts some data, and queries it back out.
+You can explore the [examples](https://github.com/youscentia/ydb-frostdb/tree/main/examples) directory for sample code using FrostDB. Below is a snippet from the simple database example. It creates a database with a dynamic column schema, inserts some data, and queries it back out.
 
-https://github.com/polarsignals/frostdb/blob/ee6970eff139c58a45998a87c02b661f32be5cbe/examples/simple/simple.go#L17-L69
+https://github.com/youscentia/ydb-frostdb/blob/ee6970eff139c58a45998a87c02b661f32be5cbe/examples/simple/simple.go#L17-L69
 
 
 ## Design choices
